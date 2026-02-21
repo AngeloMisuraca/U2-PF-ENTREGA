@@ -6,7 +6,7 @@ canvas.width = 1024;
 canvas.height = 576;
 
 const collisionMap = [];
-for (let i = 0; i < collisions.length; i+= 70) {
+for (let i = 0; i < collisions.length; i += 70) {
     collisionMap.push(collisions.slice(i, 70 + i));
 }
 
@@ -14,7 +14,7 @@ class limite {
     constructor(posicion) {
         this.posicion = posicion;
         this.width = 48,
-        this.height = 48
+            this.height = 48
     }
 }
 
