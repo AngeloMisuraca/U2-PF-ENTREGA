@@ -3,7 +3,7 @@ const canvas = document.querySelector('canvas');
 const contexto = canvas.getContext('2d');
 
 canvas.width = 1024;
-canvas.height = 576;
+canvas.height = 595;
 
 const collisionMap = [];
 for (let i = 0; i < collisions.length; i += 70) {
@@ -12,23 +12,8 @@ for (let i = 0; i < collisions.length; i += 70) {
 const desplazamiento = {
     x: -600,
     y: -500
-} 
-
-class Limite {
-    static width = 48
-    static height = 48
-
-    constructor({ posicion }) {
-        this.posicion = posicion;
-        this.width = 48;
-        this.height = 48;
-    }
-
-    draw() {
-        contexto.fillStyle = 'red'
-        contexto.fillRect(this.posicion.x, this.posicion.y, this.width, this.height)
-    }
 }
+
 const limites = [];
 
 // for (let i = 0; i < collisionMap.length; i++) {
@@ -51,8 +36,8 @@ collisionMap.forEach((row, i) => {
         if (simbolo === 1025) {
             limites.push(new Limite({
                 posicion: {
-                    x: j * Limite.width,
-                    y: i * Limite.height,
+                    x: j * Limite.width + desplazamiento.x,
+                    y: i * Limite.height + desplazamiento.y,
                 }
             }))
         }
@@ -62,28 +47,53 @@ collisionMap.forEach((row, i) => {
 const image = new Image();
 image.src = './img/pokemon style game map.png'
 
-const playerImg = new Image();
-playerImg.src = './img/MaximoDown.png'
+const foregroundImage = new Image();
+foregroundImage.src = './img/foreground.png'
 
-class Sprite {
-    constructor({ posicion, velocidad, image }) {
-        this.posicion = posicion;
-        this.image = image;
-        // this.velocidad = velocidad
-    }
+const playerImgUp = new Image();
+playerImgUp.src = './img/MaximoUp.png'
 
-    draw() {
-        if (!this.image.complete) return;
-        contexto.drawImage(this.image, this.posicion.x, this.posicion.y);
+const playerImgDown = new Image();
+playerImgDown.src = './img/MaximoDown.png'
+
+const playerImgLeft = new Image();
+playerImgLeft.src = './img/MaximoLeft.png'
+
+const playerImgRigth = new Image();
+playerImgRigth.src = './img/MaximoRigth.png'
+
+
+const jugador = new Sprite({
+    posicion: {
+        x: canvas.width / 2 - 256 / 4 / 2,
+        y: canvas.height / 2 - 56 / 2,
+    },
+    image: playerImgDown,
+    frames: {
+        max: 4
+    },
+    sprites: {
+        arriba: playerImgUp,
+        abajo: playerImgDown,
+        izquierda: playerImgLeft,
+        derecha: playerImgRigth,
     }
-}
+})
 
 const fondo = new Sprite({
     posicion: {
-        x: -600,
-        y: -500
+        x: desplazamiento.x,
+        y: desplazamiento.y
     },
     image: image
+});
+
+const foreground = new Sprite({
+    posicion: {
+        x: desplazamiento.x,
+        y: desplazamiento.y
+    },
+    image: foregroundImage
 });
 
 const keys = {
@@ -103,39 +113,132 @@ const keys = {
 
 let ultimaKey = "";
 
+const simboloMovible = [fondo, ...limites, foreground]
+
+function colisionRectangular({ rectangulo1, rectangulo2 }) {
+    return (
+        rectangulo1.posicion.x + rectangulo1.width >= rectangulo2.posicion.x && rectangulo1.posicion.x <= rectangulo2.posicion.x + rectangulo2.width && rectangulo1.posicion.y <= rectangulo2.posicion.y + rectangulo2.height && rectangulo1.posicion.y + rectangulo1.height >= rectangulo2.posicion.y
+    )
+}
+
 function animate() {
     window.requestAnimationFrame(animate);
-    // contexto.clearRect(0, 0, canvas.width, canvas.height);
     fondo.draw();
-
-
     limites.forEach(limite => {
-        limite.draw();
+        limite.draw()
     })
+    jugador.draw();
+    foreground.draw()
 
-    contexto.drawImage(
-        playerImg,
-        0,
-        0,
-        playerImg.width / 4,
-        playerImg.height,
-        canvas.width / 2 - playerImg.width / 3,
-        canvas.height / 2 - playerImg.height / 2,
-        playerImg.width / 4,
-        playerImg.height
-    );
+    let moving = true;
+    jugador.moving = false
+    if (keys.ArrowUp.presionada && ultimaKey === "ArrowUp") {
+        jugador.moving = true
+        jugador.image = jugador.sprites.arriba
 
-    if (keys.ArrowUp.presionada && ultimaKey == "ArrowUp") {
-        fondo.posicion.y = fondo.posicion.y + 3
+        for (let i = 0; i < limites.length; i++) {
+            const limite = limites[i];
+            if (
+                colisionRectangular({
+                    rectangulo1: jugador,
+                    rectangulo2: {
+                        ...limite,
+                        posicion: {
+                            x: limite.posicion.x,
+                            y: limite.posicion.y + 3
+                        }
+                    }
+                })
+            ) {
+                moving = false;
+                break;
+            }
+        }
+        if (moving) {
+            simboloMovible.forEach(Movibles => {
+                Movibles.posicion.y += 3
+            })
+        }
+
+
     }
     else if (keys.ArrowDown.presionada && ultimaKey == "ArrowDown") {
-        fondo.posicion.y = fondo.posicion.y - 3
+        jugador.moving = true
+        jugador.image = jugador.sprites.abajo
+        for (let i = 0; i < limites.length; i++) {
+            const limite = limites[i];
+            if (
+                colisionRectangular({
+                    rectangulo1: jugador,
+                    rectangulo2: {
+                        ...limite,
+                        posicion: {
+                            x: limite.posicion.x,
+                            y: limite.posicion.y - 3
+                        }
+                    }
+                })
+            ) {
+                moving = false;
+                break;
+            }
+        }
+        if (moving)
+            simboloMovible.forEach(Movibles => {
+                Movibles.posicion.y -= 3
+            })
     }
     else if (keys.ArrowLeft.presionada && ultimaKey == "ArrowLeft") {
-        fondo.posicion.x = fondo.posicion.x + 3
+        jugador.moving = true
+        jugador.image = jugador.sprites.izquierda
+        for (let i = 0; i < limites.length; i++) {
+            const limite = limites[i];
+            if (
+                colisionRectangular({
+                    rectangulo1: jugador,
+                    rectangulo2: {
+                        ...limite,
+                        posicion: {
+                            x: limite.posicion.x + 3,
+                            y: limite.posicion.y
+                        }
+                    }
+                })
+            ) {
+                moving = false;
+                break;
+            }
+        }
+        if (moving)
+            simboloMovible.forEach(Movibles => {
+                Movibles.posicion.x += 3
+            })
     }
     else if (keys.ArrowRight.presionada && ultimaKey == "ArrowRight") {
-        fondo.posicion.x = fondo.posicion.x - 3
+        jugador.moving = true
+        jugador.image = jugador.sprites.derecha
+        for (let i = 0; i < limites.length; i++) {
+            const limite = limites[i];
+            if (
+                colisionRectangular({
+                    rectangulo1: jugador,
+                    rectangulo2: {
+                        ...limite,
+                        posicion: {
+                            x: limite.posicion.x - 3,
+                            y: limite.posicion.y
+                        }
+                    }
+                })
+            ) {
+                moving = false;
+                break;
+            }
+        }
+        if (moving)
+            simboloMovible.forEach(Movibles => {
+                Movibles.posicion.x -= 3
+            })
     }
 }
 
