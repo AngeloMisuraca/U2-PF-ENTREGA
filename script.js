@@ -1,5 +1,4 @@
 const canvas = document.querySelector('canvas');
-
 const contexto = canvas.getContext('2d');
 
 canvas.width = 1024;
@@ -9,32 +8,37 @@ const collisionMap = [];
 for (let i = 0; i < collisions.length; i += 70) {
     collisionMap.push(collisions.slice(i, 70 + i));
 }
-const desplazamiento = {
-    x: -600,
-    y: -500
+
+const battleZoneMap = [];
+for (let i = 0; i < battle.length; i += 70) {
+    battleZoneMap.push(battle.slice(i, 70 + i));
 }
 
 const limites = [];
-
-// for (let i = 0; i < collisionMap.length; i++) {
-//     const row = collisionMap[i];
-//     for (let j = 0; j < row.length; j++) {
-//         const simbolo = row[j];
-//         if (simbolo === 1025) {
-//             limites.push(new limite({
-//                 posicion: {
-//                     x: i * limite.width + desplazamiento.x,
-//                     y: i * limite.height + desplazamiento.y,
-//                 }
-//             }));
-//         }
-//     }
-// }
+const desplazamiento = {
+    x: -640,
+    y: -500
+}
 
 collisionMap.forEach((row, i) => {
     row.forEach((simbolo, j) => {
         if (simbolo === 1025) {
             limites.push(new Limite({
+                posicion: {
+                    x: j * Limite.width + desplazamiento.x,
+                    y: i * Limite.height + desplazamiento.y,
+                }
+            }))
+        }
+    })
+})
+
+const battleZones = [];
+ 
+battleZoneMap.forEach((row, i) => {
+    row.forEach((simbolo, j) => {
+        if (simbolo === 1025) {
+            battleZones.push(new Limite({
                 posicion: {
                     x: j * Limite.width + desplazamiento.x,
                     y: i * Limite.height + desplazamiento.y,
@@ -65,7 +69,7 @@ playerImgRigth.src = './img/MaximoRigth.png'
 
 const jugador = new Sprite({
     posicion: {
-        x: canvas.width / 2 - 256 / 4 / 2,
+        x: canvas.width / 2 - 256 / 4,
         y: canvas.height / 2 - 56 / 2,
     },
     image: playerImgDown,
@@ -113,7 +117,7 @@ const keys = {
 
 let ultimaKey = "";
 
-const simboloMovible = [fondo, ...limites, foreground]
+const simboloMovible = [fondo, ...limites, foreground, ...battleZones]
 
 function colisionRectangular({ rectangulo1, rectangulo2 }) {
     return (
@@ -121,17 +125,64 @@ function colisionRectangular({ rectangulo1, rectangulo2 }) {
     )
 }
 
+const battleActivo = {
+    initiated: false
+}
+
 function animate() {
-    window.requestAnimationFrame(animate);
+    const animationID = window.requestAnimationFrame(animate);
     fondo.draw();
     limites.forEach(limite => {
         limite.draw()
+    })
+    battleZones.forEach((battleZone) => {
+        battleZone.draw()
     })
     jugador.draw();
     foreground.draw()
 
     let moving = true;
-    jugador.moving = false
+    jugador.moving = false;
+
+    console.log(animationID)
+    if (battleActivo.initiated) return
+
+    // Activacion de batalla
+    if (keys.ArrowUp.presionada || keys.ArrowDown.presionada || keys.ArrowLeft.presionada || keys.ArrowRight.presionada) {
+        for (let i = 0; i < battleZones.length; i++) {
+            const battlezone = battleZones[i];
+            // const overlappingArea = Math.min(jugador.posicion.x + jugador.width, battlezone.posicion.x + battlezone.width) - Math.max(jugador.posicion.x, battlezone.posicion.x) * Math.min(jugador.posicion.y + jugador.height, battlezone.posicion.y + battlezone.height) - Math.max(jugador.posicion.y, battlezone.posicion.y)
+            
+            if (
+                colisionRectangular({
+                    rectangulo1: jugador,
+                    rectangulo2: battlezone
+                }) && Math.random() < 0.003
+                //&& overlappingArea > (jugador.width * jugador.height)
+                
+            ) {
+                console.log("Activate battle")
+                window.cancelAnimationFrame(animationID)
+                battleActivo.initiated = true
+                gsap.to('#overlappingDiv', {
+                    opacity: 1,
+                    repeat: 3,
+                    yoyo: true,
+                    duration: 0.5,
+                    onComplete() {
+                        gsap.to('#overlappingDiv', {
+                            opacity: 1,
+                            duration: 0.5,
+                        })
+
+                        
+                    }
+                })
+                break;
+            }
+        }
+    }
+
     if (keys.ArrowUp.presionada && ultimaKey === "ArrowUp") {
         jugador.moving = true
         jugador.image = jugador.sprites.arriba
@@ -159,7 +210,6 @@ function animate() {
                 Movibles.posicion.y += 3
             })
         }
-
 
     }
     else if (keys.ArrowDown.presionada && ultimaKey == "ArrowDown") {

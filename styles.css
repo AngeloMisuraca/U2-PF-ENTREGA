@@ -1,3 +1,21 @@
 body {
     background-color: black;
 }
+
+.battleEscene {
+    background-color: black;
+    /* width: 200px;
+    height: 200px; */
+    position: absolute;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.displayDiv {
+    display: inline-block;
+    position: relative;
+}

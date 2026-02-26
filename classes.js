@@ -49,7 +49,7 @@ class Limite {
     }
 
     draw() {
-        contexto.fillStyle = 'rgba(255, 0, 0, 0)'
+        contexto.fillStyle = 'rgba(255, 0, 0, 0.5)'
         contexto.fillRect(this.posicion.x, this.posicion.y, this.width, this.height)
     }
 }
