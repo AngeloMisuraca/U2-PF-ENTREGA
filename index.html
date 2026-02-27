@@ -5,18 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokemon DAW Version</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 
 <body>
     <div class="displayDiv">
         <div id="overlappingDiv" class="battleEscene"></div>
         <canvas></canvas>
-    </div>    
+        <div class="footer">
+            <button>Tackle</button>
+            <button id="AtqRapido" >Ataque Rápido</button>
+            <button>Rayo Trueno</button>
+            <button>Tacleada de Voltios</button>
+        </div>
+
+        <div class="battle-ui">
+        
+            <!-- Pokémon rival -->
+            <div class="pokemon-status rival">
+                <div class="pokemon-header">
+                    <span class="name">CHARMANDER</span>
+                    <span class="level">Lv.23</span>
+                </div>
+        
+                <div id="HP_rival" class="hp-bar-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar">
+                        <div class="hp-fill"></div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Pokémon jugador -->
+            <div class="pokemon-status player">
+                <div class="pokemon-header">
+                    <span class="name">PIKACHU</span>
+                    <span class="level">Lv.25</span>
+                </div>
+        
+                <div id="HP_jugador" class="hp-bar-container">
+                    <span class="hp-label">HP</span>
+                    <div class="hp-bar">
+                        <div class="hp-fill"></div>
+                    </div>
+                </div>
+            </div>
+    </div> 
+    
+    
+    
+    </div>
 </body>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"
     integrity="sha512-H6cPm97FAsgIKmlBA4s774vqoN24V5gSQL4yBTDOY2su2DeXZVhQPxFK4P6GPdnZqM9fg1G3cMv5wD7e6cFLZQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="data/battleScene.js"></script>
+<script src="data/zonaBattle.js"></script>
 <script src="data/collision.js"></script>
 <script src="classes.js"></script>
 <script src="script.js"></script>

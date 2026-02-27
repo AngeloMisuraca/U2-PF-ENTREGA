@@ -34,7 +34,7 @@ collisionMap.forEach((row, i) => {
 })
 
 const battleZones = [];
- 
+
 battleZoneMap.forEach((row, i) => {
     row.forEach((simbolo, j) => {
         if (simbolo === 1025) {
@@ -142,9 +142,8 @@ function animate() {
     foreground.draw()
 
     let moving = true;
-    jugador.moving = false;
+    jugador.animate = false;
 
-    console.log(animationID)
     if (battleActivo.initiated) return
 
     // Activacion de batalla
@@ -152,17 +151,17 @@ function animate() {
         for (let i = 0; i < battleZones.length; i++) {
             const battlezone = battleZones[i];
             // const overlappingArea = Math.min(jugador.posicion.x + jugador.width, battlezone.posicion.x + battlezone.width) - Math.max(jugador.posicion.x, battlezone.posicion.x) * Math.min(jugador.posicion.y + jugador.height, battlezone.posicion.y + battlezone.height) - Math.max(jugador.posicion.y, battlezone.posicion.y)
-            
+
             if (
                 colisionRectangular({
                     rectangulo1: jugador,
                     rectangulo2: battlezone
                 }) && Math.random() < 0.003
                 //&& overlappingArea > (jugador.width * jugador.height)
-                
+
             ) {
-                console.log("Activate battle")
                 window.cancelAnimationFrame(animationID)
+
                 battleActivo.initiated = true
                 gsap.to('#overlappingDiv', {
                     opacity: 1,
@@ -173,9 +172,15 @@ function animate() {
                         gsap.to('#overlappingDiv', {
                             opacity: 1,
                             duration: 0.5,
-                        })
+                            onComplete() {
+                                animateBattle()
+                                gsap.to('#overlappingDiv', {
+                                    opacity: 0,
+                                    duration: 0.5,
 
-                        
+                                })
+                            }
+                        })
                     }
                 })
                 break;
@@ -184,7 +189,7 @@ function animate() {
     }
 
     if (keys.ArrowUp.presionada && ultimaKey === "ArrowUp") {
-        jugador.moving = true
+        jugador.animate = true
         jugador.image = jugador.sprites.arriba
 
         for (let i = 0; i < limites.length; i++) {
@@ -213,7 +218,7 @@ function animate() {
 
     }
     else if (keys.ArrowDown.presionada && ultimaKey == "ArrowDown") {
-        jugador.moving = true
+        jugador.animate = true
         jugador.image = jugador.sprites.abajo
         for (let i = 0; i < limites.length; i++) {
             const limite = limites[i];
@@ -239,7 +244,7 @@ function animate() {
             })
     }
     else if (keys.ArrowLeft.presionada && ultimaKey == "ArrowLeft") {
-        jugador.moving = true
+        jugador.animate = true
         jugador.image = jugador.sprites.izquierda
         for (let i = 0; i < limites.length; i++) {
             const limite = limites[i];
@@ -265,7 +270,7 @@ function animate() {
             })
     }
     else if (keys.ArrowRight.presionada && ultimaKey == "ArrowRight") {
-        jugador.moving = true
+        jugador.animate = true
         jugador.image = jugador.sprites.derecha
         for (let i = 0; i < limites.length; i++) {
             const limite = limites[i];
@@ -294,7 +299,73 @@ function animate() {
 
 animate();
 
+const battleBackgoundImage = new Image();
+battleBackgoundImage.src = './img/BattleBackground.png';
+const battleBackground = new Sprite({
+    posicion: {
+        x: 0,
+        y: 0,
+    },
+    image: battleBackgoundImage,
+    scale: 0.8
+});
 
+const charmanderImage = new Image();
+charmanderImage.src = './img/charmander.png';
+
+
+const charmander = new Sprite({
+    posicion: {
+        x: 788,
+        y: 140,
+    },
+    image: charmanderImage,
+    frames: {
+        max: 5,
+    },
+    animate: true,
+    isEnemy: true,
+    scale: 2.5
+
+});
+
+const pikachuImage = new Image();
+pikachuImage.src = './img/pikachu.png';
+
+
+const pikachu = new Sprite({
+    posicion: {
+        x: 380,
+        y: 490,
+    },
+    image: pikachuImage,
+    frames: {
+        max: 4,
+    },
+    animate: true,
+    scale: -0.5
+
+});
+
+
+function animateBattle() {
+    window.requestAnimationFrame(animateBattle)
+    battleBackground.draw();
+    charmander.draw();
+    pikachu.draw();
+}
+
+animateBattle()
+
+document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', (e) => {
+        console.log(e.currentTarget.innerHTML)
+        pikachu.attack({
+            attack: 1,
+            recipient: charmander,
+        })
+    })
+})
 
 window.addEventListener('keydown', (e) => {
     switch (e.key) {
