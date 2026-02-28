@@ -17,76 +17,290 @@ class Sprite {
     }
 
     draw() {
-        contexto.save()
-        contexto.globalAlpha = this.opacity,
-        contexto.drawImage(
-            this.image,
-            this.frames.value * this.width,
-            0,
-            this.image.width / this.frames.max,
-            this.image.height,
-            this.posicion.x,
-            this.posicion.y,
-            (this.image.width / this.frames.max) * this.scale,
-            this.image.height * this.scale
-        )
-        contexto.restore()
+        if (!this.width) return;
 
-        if (!this.animate) return
+        const columnasTrueno = 5;
+        let col = 0;
+        let fila = 0;
 
-        if (this.frames.max > 1) {
-            this.frames.elapsed++
+        if (this.frames.max > columnasTrueno) {
+            col = this.frames.value % columnasTrueno;
+            fila = Math.floor(this.frames.value / columnasTrueno);
+        } else {
+            col = this.frames.value;
+            fila = 0;
         }
 
-        if (this.frames.elapsed % 13 === 0) {
-            if (this.frames.value < this.frames.max - 1) this.frames.value++
-            else this.frames.value = 0
+        contexto.save();
+        contexto.globalAlpha = this.opacity;
+
+        contexto.drawImage(
+            this.image,
+            col * this.width,
+            fila * this.height,
+            this.width,
+            this.height,
+            this.posicion.x,
+            this.posicion.y,
+            this.width * this.scale,
+            this.height * this.scale
+        );
+        contexto.restore();
+
+        if (!this.animate) return;
+
+        if (this.frames.max > 1) {
+            this.frames.elapsed++;
+        }
+
+        const velocidad = this.frames.hold || 13;
+
+        if (this.frames.elapsed % velocidad === 0) {
+            if (this.frames.value < this.frames.max - 1) this.frames.value++;
+            else this.frames.value = 0;
         }
     }
 
-    attack({ attack, recipient }) {
+    attack({ attack, recipient, renderSprites }) {
+
         const timeLine = gsap.timeline()
 
         this.health -= attack.damage
+
+        let healthBar = '#HP_rival .hp-fill'
+        
+        if (this.isEnemy) {
+            healthBar = '#HP_jugador .hp-fill'
+        }
 
         let movementDistance = 20
         if (this.isEnemy) {
             movementDistance = -20
         }
-        
-        let healthBar = '#HP_rival .hp-fill'
-        if (this.isEnemy) {
-            healthBar = '#HP_jugador .hp-fill'
+
+        switch (attack.name) {
+
+            case 'Tacleada_de_Voltios':
+                const voltioImage = new Image();
+
+                const voltio = new Sprite({
+                    posicion: {
+                        x: 750,
+                        y: 130
+                    },
+                    image: voltioImage,
+                    frames: {
+                        max: 10,
+                        hold: 5
+                    },
+                    animate: true,
+                    scale: 1.5
+                });
+
+                voltioImage.onload = () => {
+                    voltio.width = voltioImage.width / 5;
+                    voltio.height = voltioImage.height / 2;
+                };
+
+                voltioImage.src = './img/voltio.png';
+                renderSprites.push(voltio);
+
+                gsap.to(voltio.posicion, {
+                    duration: 1,
+                    onComplete: () => {
+                        renderSprites.pop();
+                    }
+                });
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.1,
+                    onComplete: () => {
+
+                        gsap.to(healthBar, {
+                            width: this.health + '%'
+                        });
+
+                        gsap.to(recipient.posicion, {
+                            x: recipient.posicion.x + 10,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 0.09,
+                        });
+
+                        gsap.to(recipient, {
+                            opacity: 0,
+                            repeat: 3,
+                            yoyo: true,
+                            duration: 0.09
+                        });
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x
+                });
+                break;
+            
+            case 'AtaqueRapido':
+                const quickAttackImage = new Image();
+
+                const QuickAttack = new Sprite({
+                    posicion: {
+                        x: 730,
+                        y: 130
+                    },
+                    image: quickAttackImage,
+                    frames: {
+                        max: 10,
+                        hold: 5
+                    },
+                    animate: true,
+                    scale: 1.5
+                });
+
+                quickAttackImage.onload = () => {
+                    QuickAttack.width = quickAttackImage.width / 5;
+                    QuickAttack.height = quickAttackImage.height / 2;
+                };
+
+                quickAttackImage.src = './img/ataqueRapido.png';
+                renderSprites.push(QuickAttack);
+
+                gsap.to(QuickAttack.posicion, {
+                    duration: 1,
+                    onComplete: () => {
+                        renderSprites.pop();
+                    }
+                });
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance,
+                    duration: 0.05
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.05,
+                    onComplete: () => {
+
+                        gsap.to(healthBar, {
+                            width: this.health + '%'
+                        });
+
+                        gsap.to(recipient.posicion, {
+                            x: recipient.posicion.x + 10,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 0.09,
+                        });
+
+                        gsap.to(recipient, {
+                            opacity: 0,
+                            repeat: 3,
+                            yoyo: true,
+                            duration: 0.09
+                        });
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x
+                });
+                break;
+
+            case 'Trueno':
+
+                const truenoImage = new Image();
+
+                const trueno = new Sprite({
+                    posicion: {
+                        x: 650,
+                        y: -65
+                    },
+                    image: truenoImage,
+                    frames: {
+                        max: 10,
+                        hold: 5
+                    },
+                    animate: true,
+                    scale: 3.5
+                });
+
+                truenoImage.onload = () => {
+                    trueno.width = truenoImage.width / 5;
+                    trueno.height = truenoImage.height / 2;
+                };
+
+                truenoImage.src = './img/trueno.png';
+                renderSprites.push(trueno);
+
+                gsap.to(trueno.posicion, {
+                    duration: 1,
+                    onComplete: () => {
+                        renderSprites.pop();
+                    }
+                });
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.1,
+                    onComplete: () => {
+                       
+                        gsap.to(healthBar, {
+                            width: this.health + '%'
+                        });
+
+                        gsap.to(recipient.posicion, {
+                            x: recipient.posicion.x + 10,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 0.09,
+                        });
+
+                        gsap.to(recipient, {
+                            opacity: 0,
+                            repeat: 3,
+                            yoyo: true,
+                            duration: 0.09
+                        });
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x 
+                });
+                break;
+
+            case 'Tackle':
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.1,
+                    onComplete: () => {
+
+                        gsap.to(healthBar, {
+                            width: this.health + '%'
+                        })
+
+                        gsap.to(recipient.posicion, {
+                            x: recipient.posicion.x + 10,
+                            yoyo: true,
+                            repeat: 3,
+                            duration: 0.09,
+                        })
+
+                        gsap.to(recipient, {
+                            opacity: 0,
+                            repeat: 3,
+                            yoyo: true,
+                            duration: 0.09
+                        })
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x
+                })
+                break;
         }
 
-        timeLine.to(this.posicion, {
-            x: this.posicion.x - movementDistance
-        }).to(this.posicion, {
-            x: this.posicion.x + movementDistance * 2,
-            duration: 0.1,
-            onComplete: ()=> {
-
-                gsap.to(healthBar, {
-                    width: this.health + '%'
-                })
-
-                gsap.to(recipient.posicion, {
-                    x: recipient.posicion.x + 10,
-                    yoyo: true,
-                    repeat: 3,
-                    duration: 0.09,
-                })
-
-                gsap.to(recipient, {
-                    opacity: 0,
-                    repeat: 3,
-                    yoyo: true,
-                    duration: 0.09
-                })
-            }
-        }).to(this.posicion, {
-            x: this.posicion.x
-        })
     }
 }
 

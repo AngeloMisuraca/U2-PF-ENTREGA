@@ -347,25 +347,35 @@ const pikachu = new Sprite({
 
 });
 
+const renderSprites = [];
 
 function animateBattle() {
     window.requestAnimationFrame(animateBattle)
     battleBackground.draw();
     charmander.draw();
     pikachu.draw();
+
+    renderSprites.forEach((Sprite) => {
+        Sprite.draw();
+    })
 }
 
 animateBattle()
 
-document.querySelectorAll('button').forEach(button => {
+document.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', (e) => {
-        console.log(e.currentTarget.innerHTML)
-        pikachu.attack({
-            attack: 1,
-            recipient: charmander,
-        })
-    })
-})
+        const attackKey = e.currentTarget.innerHTML.trim();
+        const selectedattack = tackles[attackKey];
+        console.log(selectedattack)
+        if (selectedattack) {
+            pikachu.attack({
+                attack: selectedattack,
+                recipient: charmander,
+                renderSprites
+            });
+        }
+    });
+});
 
 window.addEventListener('keydown', (e) => {
     switch (e.key) {
