@@ -63,20 +63,47 @@ class Sprite {
 
     attack({ attack, recipient, renderSprites }) {
 
-        const timeLine = gsap.timeline()
+        const timeLine = gsap.timeline();
 
-        this.health -= attack.damage
+        // CORRECCIÓN: El daño lo recibe el oponente
+        recipient.health -= attack.damage;
+        if (recipient.health < 0) recipient.health = 0;
 
-        let healthBar = '#HP_rival .hp-fill'
-        
+        // Determinar qué barra de vida animar
+        let healthBar;
         if (this.isEnemy) {
-            healthBar = '#HP_jugador .hp-fill'
+            healthBar = '#HP_jugador .hp-fill';
+        } else {
+            healthBar = '#HP_rival .hp-fill';
         }
 
-        let movementDistance = 20
+        // Dirección del movimiento físico del Pokémon
+        let movementDistance;
         if (this.isEnemy) {
-            movementDistance = -20
+            movementDistance = -20;
+        } else {
+            movementDistance = 20;
         }
+
+        const alTerminarAtaque = () => {
+            // Si el que atacó fue Pikachu (el jugador), Charmander responde
+            if (!this.isEnemy) {
+
+                // --- AQUÍ LLAMAS A TUS ATAQUES DE CHARMANDER ---
+                const nombresAtaques = Object.keys(ataquesCharmander); // Usa tu objeto
+                const nombreAleatorio = nombresAtaques[Math.floor(Math.random() * nombresAtaques.length)];
+                const ataqueSeleccionado = ataquesCharmander[nombreAleatorio];
+
+                // Pequeño delay para que no sea instantáneo
+                setTimeout(() => {
+                    recipient.attack({
+                        attack: ataqueSeleccionado,
+                        recipient: this,
+                        renderSprites,
+                    });
+                }, 800);
+            }
+        };
 
         switch (attack.name) {
 
@@ -85,8 +112,8 @@ class Sprite {
 
                 const voltio = new Sprite({
                     posicion: {
-                        x: 750,
-                        y: 130
+                        x: recipient.posicion.x - 35,
+                        y: recipient.posicion.y - 20
                     },
                     image: voltioImage,
                     frames: {
@@ -108,7 +135,7 @@ class Sprite {
                 gsap.to(voltio.posicion, {
                     duration: 1,
                     onComplete: () => {
-                        renderSprites.pop();
+                        renderSprites.splice(renderSprites.indexOf(voltio), 1);
                     }
                 });
 
@@ -120,7 +147,7 @@ class Sprite {
                     onComplete: () => {
 
                         gsap.to(healthBar, {
-                            width: this.health + '%'
+                            width: recipient.health + '%'
                         });
 
                         gsap.to(recipient.posicion, {
@@ -138,17 +165,18 @@ class Sprite {
                         });
                     }
                 }).to(this.posicion, {
-                    x: this.posicion.x
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
                 });
                 break;
-            
+
             case 'AtaqueRapido':
                 const quickAttackImage = new Image();
 
                 const QuickAttack = new Sprite({
                     posicion: {
-                        x: 730,
-                        y: 130
+                        x: recipient.posicion.x - 50,
+                        y: recipient.posicion.y - 30
                     },
                     image: quickAttackImage,
                     frames: {
@@ -170,7 +198,7 @@ class Sprite {
                 gsap.to(QuickAttack.posicion, {
                     duration: 1,
                     onComplete: () => {
-                        renderSprites.pop();
+                        renderSprites.splice(renderSprites.indexOf(QuickAttack), 1);
                     }
                 });
 
@@ -183,7 +211,7 @@ class Sprite {
                     onComplete: () => {
 
                         gsap.to(healthBar, {
-                            width: this.health + '%'
+                            width: recipient.health + '%'
                         });
 
                         gsap.to(recipient.posicion, {
@@ -201,7 +229,8 @@ class Sprite {
                         });
                     }
                 }).to(this.posicion, {
-                    x: this.posicion.x
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
                 });
                 break;
 
@@ -211,8 +240,8 @@ class Sprite {
 
                 const trueno = new Sprite({
                     posicion: {
-                        x: 650,
-                        y: -65
+                        x: recipient.posicion.x - 130,
+                        y: recipient.posicion.y - 190
                     },
                     image: truenoImage,
                     frames: {
@@ -234,7 +263,7 @@ class Sprite {
                 gsap.to(trueno.posicion, {
                     duration: 1,
                     onComplete: () => {
-                        renderSprites.pop();
+                        renderSprites.splice(renderSprites.indexOf(trueno), 1);
                     }
                 });
 
@@ -244,9 +273,9 @@ class Sprite {
                     x: this.posicion.x + movementDistance * 2,
                     duration: 0.1,
                     onComplete: () => {
-                       
+
                         gsap.to(healthBar, {
-                            width: this.health + '%'
+                            width: recipient.health + '%'
                         });
 
                         gsap.to(recipient.posicion, {
@@ -264,7 +293,8 @@ class Sprite {
                         });
                     }
                 }).to(this.posicion, {
-                    x: this.posicion.x 
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
                 });
                 break;
 
@@ -278,7 +308,7 @@ class Sprite {
                     onComplete: () => {
 
                         gsap.to(healthBar, {
-                            width: this.health + '%'
+                            width: recipient.health + '%'
                         })
 
                         gsap.to(recipient.posicion, {
@@ -296,8 +326,110 @@ class Sprite {
                         })
                     }
                 }).to(this.posicion, {
-                    x: this.posicion.x
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
                 })
+                break;
+
+            case 'flames':
+                const imgFlames = new Image();
+
+                // 1. PRIMERO declaramos qué hacer al cargar
+
+
+                // 2. DESPUÉS le damos la ruta de la imagen
+
+
+                const Flames = new Sprite({
+                    posicion: {
+                        x: recipient.posicion.x - 50,
+                        y: recipient.posicion.y - 100
+                    },
+                    image: imgFlames,
+                    frames: {
+                        max: 3,
+                        hold: 5
+                    },
+                    animate: true,
+                    scale: 1
+                });
+
+                imgFlames.onload = () => {
+                    Flames.width = imgFlames.width / 5;
+                    // efectoFlames.height = imgFlames.height / 2;
+                };
+
+                imgFlames.src = './img/Flames.png';
+                renderSprites.push(Flames);
+
+                gsap.to(Flames.posicion, {
+                    duration: 1,
+                    onComplete: () => {
+                        renderSprites.splice(renderSprites.indexOf(Flames), 1);
+                    }
+                });
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.1,
+                    onComplete: () => {
+                        gsap.to(healthBar, { width: recipient.health + '%' });
+                        gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.08 });
+                        gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.08 });
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
+                });
+                break;
+
+            case 'fireSpin':
+                const imgFireSpin = new Image();
+
+                const FireSpin = new Sprite({
+                    posicion: {
+                        x: recipient.posicion.x - 30,
+                        y: recipient.posicion.y - 80
+                    },
+                    image: imgFireSpin,
+                    frames: {
+                        max: 8,
+                        hold: 5
+                    },
+                    animate: true,
+                    scale: 1
+                });
+
+                imgFireSpin.onload = () => {
+                    FireSpin.width = imgFireSpin.width / 5;
+                    FireSpin.height = imgFireSpin.height;
+                };
+                imgFireSpin.src = './img/FireSpin.png';
+                renderSprites.push(FireSpin);
+
+                gsap.to(FireSpin.posicion, {
+                    duration: 1,
+                    onComplete: () => {
+                        renderSprites.splice(renderSprites.indexOf(FireSpin), 1);
+                    }
+                });
+
+                timeLine.to(this.posicion, {
+                    x: this.posicion.x - movementDistance
+                }).to(this.posicion, {
+                    x: this.posicion.x + movementDistance * 2,
+                    duration: 0.1,
+                    onComplete: () => {
+                        gsap.to(healthBar, { width: recipient.health + '%' });
+                        gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.08 });
+                        gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.08 });
+                    }
+                }).to(this.posicion, {
+                    x: this.posicion.x,
+                    onComplete: alTerminarAtaque
+                });
                 break;
         }
 

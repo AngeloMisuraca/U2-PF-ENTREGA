@@ -16,3 +16,14 @@ const tackles = {
         damage: 30,
     },
 }
+
+const ataquesCharmander = {
+    flames: {
+        name: 'flames',
+        damage: 12
+    },
+    fireSpin: {
+        name: 'fireSpin',
+        damage: 18
+    }
+};

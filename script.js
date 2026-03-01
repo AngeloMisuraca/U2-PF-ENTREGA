@@ -371,7 +371,8 @@ document.querySelectorAll('button').forEach((button) => {
             pikachu.attack({
                 attack: selectedattack,
                 recipient: charmander,
-                renderSprites
+                renderSprites,
+
             });
         }
     });
