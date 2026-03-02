@@ -112,6 +112,19 @@ class Sprite {
         document.querySelector('#dialogoBox').innerHTML = this.name + ' usó ' + attack.name;
         const timeLine = gsap.timeline();
 
+        if (attack.name === 'Trueno' || attack.name === 'Tacleada_de_Voltios') {
+            sfx.rayo.currentTime = 0;
+            sfx.rayo.play();
+        } else {
+            sfx.golpe.currentTime = 0;
+            sfx.golpe.play();
+        }
+
+        setTimeout(() => {
+            sfx.rayo.pause();
+            sfx.rayo.currentTime = 0;
+        }, 1700);
+
         let healthBar;
         if (this.isEnemy) {
             healthBar = '#HP_jugador .hp-fill';
