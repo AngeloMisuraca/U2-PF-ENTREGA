@@ -114,6 +114,7 @@ const keys = {
         presionada: false
     }
 }
+let battleAnimationID;
 
 let ultimaKey = "";
 
@@ -158,7 +159,6 @@ function animate() {
                     rectangulo2: battlezone
                 })
             ) {
-
                 window.cancelAnimationFrame(animationID)
 
                 battleActivo.initiated = true
@@ -173,7 +173,6 @@ function animate() {
                 gsap.set(pikachu.posicion, { x: 380, y: 490 });
                 gsap.set(charmander.posicion, { x: 788, y: 140 });
 
-
                 gsap.to('#overlappingDiv', {
                     opacity: 1,
                     repeat: 3,
@@ -182,17 +181,17 @@ function animate() {
                     onComplete() {
                         gsap.to('#overlappingDiv', {
                             opacity: 1,
-                            duration: 0.1,
+                            duration: 0.5,
                             onComplete() {
                                 document.querySelector('.battle-ui').style.display = 'block';
                                 document.querySelector('.footer').style.display = 'grid';
                                 document.querySelector('#dialogoBox').style.display = 'none';
 
-                                animateBattle()
+                                animateBattle();
 
                                 gsap.to('#overlappingDiv', {
                                     opacity: 0,
-                                    duration: 0.2
+                                    duration: 0.5
                                 })
                             }
                         })
@@ -304,14 +303,14 @@ const pikachu = new Sprite({
 const renderSprites = [];
 
 function animateBattle() {
-    window.requestAnimationFrame(animateBattle)
+    battleAnimationID = window.requestAnimationFrame(animateBattle); 
     battleBackground.draw();
     charmander.draw();
     pikachu.draw();
 
     renderSprites.forEach((Sprite) => {
         Sprite.draw();
-    })
+    });
 }
 
 document.querySelectorAll('button').forEach((button) => {
@@ -346,6 +345,9 @@ document.querySelector('#dialogoBox').addEventListener('click', (event) => {
 })
 
 function finalizarCombate() {
+
+    window.cancelAnimationFrame(battleAnimationID);
+
     document.querySelector('.battle-ui').style.display = 'none';
     document.querySelector('.footer').style.display = 'none';
     document.querySelector('#dialogoBox').style.display = 'none';
