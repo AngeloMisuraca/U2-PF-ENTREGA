@@ -22,8 +22,4 @@ const ataquesCharmander = {
         name: 'flames',
         damage: 12
     },
-    fireSpin: {
-        name: 'fireSpin',
-        damage: 18
-    }
 };

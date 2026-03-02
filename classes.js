@@ -61,15 +61,15 @@ class Sprite {
         }
     }
 
+
     attack({ attack, recipient, renderSprites }) {
 
+        document.querySelector('#dialogoBox').style.display = 'block '
         const timeLine = gsap.timeline();
 
-        // CORRECCIÓN: El daño lo recibe el oponente
         recipient.health -= attack.damage;
         if (recipient.health < 0) recipient.health = 0;
 
-        // Determinar qué barra de vida animar
         let healthBar;
         if (this.isEnemy) {
             healthBar = '#HP_jugador .hp-fill';
@@ -77,7 +77,6 @@ class Sprite {
             healthBar = '#HP_rival .hp-fill';
         }
 
-        // Dirección del movimiento físico del Pokémon
         let movementDistance;
         if (this.isEnemy) {
             movementDistance = -20;
@@ -86,15 +85,13 @@ class Sprite {
         }
 
         const alTerminarAtaque = () => {
-            // Si el que atacó fue Pikachu (el jugador), Charmander responde
+
             if (!this.isEnemy) {
 
-                // --- AQUÍ LLAMAS A TUS ATAQUES DE CHARMANDER ---
-                const nombresAtaques = Object.keys(ataquesCharmander); // Usa tu objeto
+                const nombresAtaques = Object.keys(ataquesCharmander);
                 const nombreAleatorio = nombresAtaques[Math.floor(Math.random() * nombresAtaques.length)];
                 const ataqueSeleccionado = ataquesCharmander[nombreAleatorio];
 
-                // Pequeño delay para que no sea instantáneo
                 setTimeout(() => {
                     recipient.attack({
                         attack: ataqueSeleccionado,
@@ -105,6 +102,9 @@ class Sprite {
             }
         };
 
+        
+        
+        
         switch (attack.name) {
 
             case 'Tacleada_de_Voltios':
@@ -166,7 +166,9 @@ class Sprite {
                     }
                 }).to(this.posicion, {
                     x: this.posicion.x,
-                    onComplete: alTerminarAtaque
+                    onComplete: alTerminarAtaque,
+                    buttonOff
+
                 });
                 break;
 
@@ -295,6 +297,7 @@ class Sprite {
                 }).to(this.posicion, {
                     x: this.posicion.x,
                     onComplete: alTerminarAtaque
+                    
                 });
                 break;
 
@@ -328,93 +331,12 @@ class Sprite {
                 }).to(this.posicion, {
                     x: this.posicion.x,
                     onComplete: alTerminarAtaque
+                    
+
                 })
                 break;
 
             case 'flames':
-                const imgFlames = new Image();
-
-                // 1. PRIMERO declaramos qué hacer al cargar
-
-
-                // 2. DESPUÉS le damos la ruta de la imagen
-
-
-                const Flames = new Sprite({
-                    posicion: {
-                        x: recipient.posicion.x - 50,
-                        y: recipient.posicion.y - 100
-                    },
-                    image: imgFlames,
-                    frames: {
-                        max: 3,
-                        hold: 5
-                    },
-                    animate: true,
-                    scale: 1
-                });
-
-                imgFlames.onload = () => {
-                    Flames.width = imgFlames.width / 5;
-                    // efectoFlames.height = imgFlames.height / 2;
-                };
-
-                imgFlames.src = './img/Flames.png';
-                renderSprites.push(Flames);
-
-                gsap.to(Flames.posicion, {
-                    duration: 1,
-                    onComplete: () => {
-                        renderSprites.splice(renderSprites.indexOf(Flames), 1);
-                    }
-                });
-
-                timeLine.to(this.posicion, {
-                    x: this.posicion.x - movementDistance
-                }).to(this.posicion, {
-                    x: this.posicion.x + movementDistance * 2,
-                    duration: 0.1,
-                    onComplete: () => {
-                        gsap.to(healthBar, { width: recipient.health + '%' });
-                        gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.08 });
-                        gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.08 });
-                    }
-                }).to(this.posicion, {
-                    x: this.posicion.x,
-                    onComplete: alTerminarAtaque
-                });
-                break;
-
-            case 'fireSpin':
-                const imgFireSpin = new Image();
-
-                const FireSpin = new Sprite({
-                    posicion: {
-                        x: recipient.posicion.x - 30,
-                        y: recipient.posicion.y - 80
-                    },
-                    image: imgFireSpin,
-                    frames: {
-                        max: 8,
-                        hold: 5
-                    },
-                    animate: true,
-                    scale: 1
-                });
-
-                imgFireSpin.onload = () => {
-                    FireSpin.width = imgFireSpin.width / 5;
-                    FireSpin.height = imgFireSpin.height;
-                };
-                imgFireSpin.src = './img/FireSpin.png';
-                renderSprites.push(FireSpin);
-
-                gsap.to(FireSpin.posicion, {
-                    duration: 1,
-                    onComplete: () => {
-                        renderSprites.splice(renderSprites.indexOf(FireSpin), 1);
-                    }
-                });
 
                 timeLine.to(this.posicion, {
                     x: this.posicion.x - movementDistance

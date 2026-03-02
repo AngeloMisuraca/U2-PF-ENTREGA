@@ -20,6 +20,18 @@ body {
     position: relative;
 }
 
+#dialogoBox {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: white;
+    padding: 12px;
+    display: none;
+
+}
+
 .footer {
     background: linear-gradient(#ebe9e9, #6e6e6e);
     height: 140px;

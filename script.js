@@ -359,8 +359,7 @@ function animateBattle() {
         Sprite.draw();
     })
 }
-
-animateBattle()
+// animateBattle()
 
 document.querySelectorAll('button').forEach((button) => {
     button.addEventListener('click', (e) => {
