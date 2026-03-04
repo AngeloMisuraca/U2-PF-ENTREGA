@@ -54,12 +54,27 @@ class Sprite {
             this.frames.elapsed++;
         }
 
-        const velocidad = this.frames.hold || 13;
+        let framesPorCambio;
 
-        if (this.frames.elapsed % velocidad === 0) {
+        if (this.frames.max > 4) {
+            framesPorCambio = 6;
+        }
+        else {
+            if (this.animSpeed) {
+                framesPorCambio = this.animSpeed;
+            } else {
+                framesPorCambio = 12;
+            }
+        }
+
+        if (this.frames.elapsed % framesPorCambio === 0) {
             if (this.frames.value < this.frames.max - 1) this.frames.value++;
             else this.frames.value = 0;
         }
+    }
+
+    attack(config) {
+        attack(this, config);
     }
 
     faint() {
@@ -104,211 +119,6 @@ class Sprite {
         }
 
         return true;
-    }
-
-    attack({ attack, recipient, renderSprites }) {
-
-        document.querySelector('#dialogoBox').style.display = 'block'
-        document.querySelector('#dialogoBox').innerHTML = this.name + ' usó ' + attack.name;
-        const timeLine = gsap.timeline();
-
-        if (attack.name === 'Trueno' || attack.name === 'Tacleada_de_Voltios') {
-            sfx.rayo.currentTime = 0;
-            sfx.rayo.play();
-        } else {
-            sfx.golpe.currentTime = 0;
-            sfx.golpe.play();
-        }
-
-        setTimeout(() => {
-            sfx.rayo.pause();
-            sfx.rayo.currentTime = 0;
-        }, 1700);
-
-        let healthBar;
-        if (this.isEnemy) {
-            healthBar = '#HP_jugador .hp-fill';
-        } else {
-            healthBar = '#HP_rival .hp-fill';
-        }
-
-        let movementDistance;
-        if (this.isEnemy) {
-            movementDistance = -20;
-        } else {
-            movementDistance = 20;
-        }
-
-        const alTerminarAtaque = () => {
-            if (!this.isEnemy && recipient.health > 0) {
-                const nombresAtaques = Object.keys(ataquesCharmander);
-                const nombreAleatorio = nombresAtaques[Math.floor(Math.random() * nombresAtaques.length)];
-                const ataqueSeleccionado = ataquesCharmander[nombreAleatorio];
-
-                setTimeout(() => {
-                    recipient.attack({
-                        attack: ataqueSeleccionado,
-                        recipient: this,
-                        renderSprites,
-                    });
-                }, 800);
-            }
-        };
-
-        switch (attack.name) {
-
-            case 'Tacleada_de_Voltios':
-                const voltioImage = new Image();
-
-                const voltio = new Sprite({
-                    posicion: {
-                        x: recipient.posicion.x - 35,
-                        y: recipient.posicion.y - 20
-                    },
-                    image: voltioImage,
-                    frames: { max: 10, hold: 5 },
-                    animate: true,
-                    scale: 1.5
-                });
-
-                voltioImage.onload = () => {
-                    voltio.width = voltioImage.width / 5;
-                    voltio.height = voltioImage.height / 2;
-                };
-
-                voltioImage.src = './img/voltio.png';
-                renderSprites.push(voltio);
-
-                gsap.to(voltio.posicion, {
-                    duration: 1,
-                    onComplete: () => renderSprites.splice(renderSprites.indexOf(voltio), 1)
-                });
-
-                timeLine.to(this.posicion, { x: this.posicion.x - movementDistance })
-                    .to(this.posicion, {
-                        x: this.posicion.x + movementDistance * 2,
-                        duration: 0.1,
-                        onComplete: () => {
-                            const sigueVivo = this.applyDamage(recipient, attack, healthBar);
-                            if (!sigueVivo) return;
-
-                            gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.09 });
-                            gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.09 });
-                        }
-                    })
-                    .to(this.posicion, { x: this.posicion.x, onComplete: alTerminarAtaque });
-                break;
-
-            case 'AtaqueRapido':
-                const quickAttackImage = new Image();
-
-                const QuickAttack = new Sprite({
-                    posicion: { x: recipient.posicion.x - 50, y: recipient.posicion.y - 30 },
-                    image: quickAttackImage,
-                    frames: { max: 10, hold: 5 },
-                    animate: true,
-                    scale: 1.5
-                });
-
-                quickAttackImage.onload = () => {
-                    QuickAttack.width = quickAttackImage.width / 5;
-                    QuickAttack.height = quickAttackImage.height / 2;
-                };
-
-                quickAttackImage.src = './img/ataqueRapido.png';
-                renderSprites.push(QuickAttack);
-
-                gsap.to(QuickAttack.posicion, {
-                    duration: 1,
-                    onComplete: () => renderSprites.splice(renderSprites.indexOf(QuickAttack), 1)
-                });
-
-                timeLine.to(this.posicion, { x: this.posicion.x - movementDistance, duration: 0.05 })
-                    .to(this.posicion, {
-                        x: this.posicion.x + movementDistance * 2,
-                        duration: 0.05,
-                        onComplete: () => {
-                            const sigueVivo = this.applyDamage(recipient, attack, healthBar);
-                            if (!sigueVivo) return;
-
-                            gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.09 });
-                            gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.09 });
-                        }
-                    })
-                    .to(this.posicion, { x: this.posicion.x, onComplete: alTerminarAtaque });
-                break;
-
-            case 'Trueno':
-                const truenoImage = new Image();
-
-                const trueno = new Sprite({
-                    posicion: { x: recipient.posicion.x - 130, y: recipient.posicion.y - 190 },
-                    image: truenoImage,
-                    frames: { max: 10, hold: 5 },
-                    animate: true,
-                    scale: 3.5
-                });
-
-                truenoImage.onload = () => {
-                    trueno.width = truenoImage.width / 5;
-                    trueno.height = truenoImage.height / 2;
-                };
-
-                truenoImage.src = './img/trueno.png';
-                renderSprites.push(trueno);
-
-                gsap.to(trueno.posicion, {
-                    duration: 1,
-                    onComplete: () => renderSprites.splice(renderSprites.indexOf(trueno), 1)
-                });
-
-                timeLine.to(this.posicion, { x: this.posicion.x - movementDistance })
-                    .to(this.posicion, {
-                        x: this.posicion.x + movementDistance * 2,
-                        duration: 0.1,
-                        onComplete: () => {
-                            const sigueVivo = this.applyDamage(recipient, attack, healthBar);
-                            if (!sigueVivo) return;
-
-                            gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.09 });
-                            gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.09 });
-                        }
-                    })
-                    .to(this.posicion, { x: this.posicion.x, onComplete: alTerminarAtaque });
-                break;
-
-            case 'Tackle':
-                timeLine.to(this.posicion, { x: this.posicion.x - movementDistance })
-                    .to(this.posicion, {
-                        x: this.posicion.x + movementDistance * 2,
-                        duration: 0.1,
-                        onComplete: () => {
-                            const sigueVivo = this.applyDamage(recipient, attack, healthBar);
-                            if (!sigueVivo) return;
-
-                            gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.09 });
-                            gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.09 });
-                        }
-                    })
-                    .to(this.posicion, { x: this.posicion.x, onComplete: alTerminarAtaque });
-                break;
-
-            case 'cuchillada':
-                timeLine.to(this.posicion, { x: this.posicion.x - movementDistance })
-                    .to(this.posicion, {
-                        x: this.posicion.x + movementDistance * 2,
-                        duration: 0.1,
-                        onComplete: () => {
-                            const sigueVivo = this.applyDamage(recipient, attack, healthBar);
-                            if (!sigueVivo) return;
-
-                            gsap.to(recipient.posicion, { x: recipient.posicion.x + 10, yoyo: true, repeat: 3, duration: 0.08 });
-                            gsap.to(recipient, { opacity: 0, repeat: 3, yoyo: true, duration: 0.08 });
-                        }
-                    })
-                    .to(this.posicion, { x: this.posicion.x, onComplete: alTerminarAtaque });
-                break;
-        }
     }
 }
 
